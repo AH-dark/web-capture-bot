@@ -14,6 +14,8 @@ struct Config {
     telegram_api_url: Option<String>,
     webhook_listen_addr: Option<String>,
     webhook_url: Option<String>,
+    sandbox: Option<bool>,
+    headless: Option<bool>,
 }
 
 #[tokio::main]
@@ -34,6 +36,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let chrome = {
         let launch_options = LaunchOptions::default_builder()
             .path(Some(default_executable().map_err(|e| anyhow!(e))?))
+            .sandbox(config.sandbox.unwrap_or(true))
+            .headless(config.headless.unwrap_or(true))
             .build()?;
 
         Browser::new(launch_options)?
