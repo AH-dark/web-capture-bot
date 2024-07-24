@@ -1,4 +1,3 @@
-use anyhow::Context;
 use teloxide::prelude::*;
 use teloxide::utils::command::BotCommands;
 
@@ -33,7 +32,14 @@ pub async fn capture_command_handler(bot: Bot, message: Message) -> anyhow::Resu
         return Err(anyhow::anyhow!("No URL provided"));
     }
 
-    let url = args.unwrap().parse::<reqwest::Url>().context("Invalid URL")?;
+    let url = match args.unwrap().parse::<reqwest::Url>() {
+        Ok(url) => url,
+        Err(e) => {
+            bot.send_message(message.chat.id, format!("Invalid URL: {}", e)).await?;
+            return Err(e.into());
+        }
+    };
+
     let loading_msg = bot.send_message(message.chat.id, format!("Capturing a screenshot of {}...", url)).await?;
 
     // capture the screenshot
@@ -53,6 +59,32 @@ pub async fn capture_command_handler(bot: Bot, message: Message) -> anyhow::Resu
 }
 
 pub async fn private_message_handler(bot: Bot, message: Message) -> anyhow::Result<()> {
-    bot.send_message(message.chat.id, "I only respond to commands in private messages.").await?;
+    let url = match message.text().map(|text| text.parse::<reqwest::Url>()) {
+        Some(Ok(url)) => url,
+        Some(Err(e)) => {
+            bot.send_message(message.chat.id, format!("Invalid URL: {}", e)).await?;
+            return Err(e.into());
+        }
+        None => {
+            // ignore non-text messages
+            return Ok(());
+        }
+    };
+
+    let loading_msg = bot.send_message(message.chat.id, format!("Capturing a screenshot of {}...", url)).await?;
+
+    // capture the screenshot
+    let screenshot = match capture_website(url.as_str()).await {
+        Ok(screenshot) => screenshot,
+        Err(e) => {
+            bot.send_message(message.chat.id, format!("Failed to capture a screenshot: {}", e)).await?;
+            return Err(e);
+        }
+    };
+
+    // send the screenshot
+    bot.send_photo(message.chat.id, teloxide::types::InputFile::memory(screenshot).file_name("screenshot.png")).caption(url.to_string()).await?;
+    bot.delete_message(message.chat.id, loading_msg.id).await.ok(); // ignore errors
+
     Ok(())
 }
