@@ -10,7 +10,7 @@ COPY . .
 # 编译应用程序
 RUN cargo build --release
 
-FROM browserless/chrome:1-puppeteer-21.9.0 AS runner
+FROM ghcr.io/browserless/chromium AS runner
 
 WORKDIR /app
 

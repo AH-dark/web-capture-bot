@@ -1,4 +1,6 @@
-use headless_chrome::Browser;
+use anyhow::anyhow;
+use headless_chrome::{Browser, LaunchOptions};
+use headless_chrome::browser::default_executable;
 use teloxide::prelude::*;
 use teloxide::update_listeners;
 
@@ -29,7 +31,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let bot = Bot::from_env()
         .set_api_url(reqwest::Url::parse(config.telegram_api_url.unwrap_or("https://api.telegram.org".into()).as_str())?);
 
-    let chrome = Browser::default()?;
+    let chrome = {
+        let launch_options = LaunchOptions::default_builder()
+            .path(Some(default_executable().map_err(|e| anyhow!(e))?))
+            .build()?;
+
+        Browser::new(launch_options)?
+    };
 
     let handler = dptree::entry()
         .branch(
