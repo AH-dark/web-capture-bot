@@ -1,0 +1,21 @@
+[package]
+name = "web-capture-bot"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "web-capture-bot"
+path = "src/main.rs"
+
+[dependencies]
+log = "0.4"
+pretty_env_logger = "0.5"
+tokio = { version = "1.38", features = ["rt-multi-thread", "macros"] }
+dotenv = "0.15"
+anyhow = "1.0"
+envy = "0.4.2"
+serde = { version = "1.0", features = ["derive"] }
+
+teloxide = { version = "0.12", features = ["macros", "webhooks", "webhooks-axum"] }
+headless_chrome = { version = "1.0.10" }
+reqwest = "0.12.5"
