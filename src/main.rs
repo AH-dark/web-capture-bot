@@ -1,6 +1,9 @@
+use std::sync::Arc;
+
 use anyhow::anyhow;
 use headless_chrome::{Browser, LaunchOptions};
 use headless_chrome::browser::default_executable;
+use moka::future::Cache;
 use teloxide::prelude::*;
 use teloxide::update_listeners;
 
@@ -43,7 +46,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .branch(Update::filter_message().filter(|message: Message| message.chat.is_private()).endpoint(handlers::private_message_handler));
 
-    let mut dispatcher = Dispatcher::builder(bot.clone(), handler).build();
+    // Create a cache that can store up to 10,000 entries.
+    let cache: Arc<Cache<String, Vec<u8>>> = Arc::new(
+        Cache::builder()
+            .max_capacity(10_000)
+            .time_to_live(std::time::Duration::from_secs(60))
+            .build()
+    );
+
+    let mut dispatcher = Dispatcher::builder(bot.clone(), handler)
+        .dependencies(dptree::deps![cache])
+        .build();
 
     if config.webhook_url.is_some() {
         let update_listener = {
