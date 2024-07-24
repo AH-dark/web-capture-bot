@@ -16,7 +16,7 @@ fn new_browser() -> anyhow::Result<Browser> {
     Browser::new(launch_options)
 }
 
-pub fn capture_website(url: &str) -> anyhow::Result<Vec<u8>> {
+pub async fn capture_website(url: &str) -> anyhow::Result<Vec<u8>> {
     let browser = new_browser().context("Failed to create a new browser")?;
 
     let tab = browser.new_tab_with_options(CreateTarget {
@@ -32,6 +32,8 @@ pub fn capture_website(url: &str) -> anyhow::Result<Vec<u8>> {
 
     tab.navigate_to(url)?;
     tab.wait_until_navigated()?;
+
+    tokio::time::sleep(std::time::Duration::from_secs(5)).await;
 
     let screenshot = tab.capture_screenshot(
         CaptureScreenshotFormatOption::Png,
