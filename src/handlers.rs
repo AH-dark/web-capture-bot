@@ -1,5 +1,4 @@
 use anyhow::Context;
-use headless_chrome::Browser;
 use teloxide::prelude::*;
 use teloxide::utils::command::BotCommands;
 
@@ -26,7 +25,7 @@ pub async fn help_command_handler(bot: Bot, message: Message) -> anyhow::Result<
     Ok(())
 }
 
-pub async fn capture_command_handler(bot: Bot, message: Message, chrome: Browser) -> anyhow::Result<()> {
+pub async fn capture_command_handler(bot: Bot, message: Message) -> anyhow::Result<()> {
     // parse the command arguments
     let args = message.text().and_then(|text| text.split_once(' ').map(|x| x.1));
     if args.is_none() {
@@ -38,7 +37,7 @@ pub async fn capture_command_handler(bot: Bot, message: Message, chrome: Browser
     let loading_msg = bot.send_message(message.chat.id, format!("Capturing a screenshot of {}...", url)).await?;
 
     // capture the screenshot
-    let screenshot = match capture_website(chrome, url.as_str()) {
+    let screenshot = match capture_website(url.as_str()) {
         Ok(screenshot) => screenshot,
         Err(e) => {
             bot.send_message(message.chat.id, format!("Failed to capture a screenshot: {}", e)).await?;

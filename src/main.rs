@@ -33,18 +33,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let bot = Bot::from_env()
         .set_api_url(reqwest::Url::parse(config.telegram_api_url.unwrap_or("https://api.telegram.org".into()).as_str())?);
 
-    let chrome = {
-        let launch_options = LaunchOptions::default_builder()
-            .path(Some(default_executable().map_err(|e| anyhow!(e))?))
-            .sandbox(config.sandbox.unwrap_or(true))
-            .headless(config.headless.unwrap_or(true))
-            .window_size(Some((1920, 1080)))
-            .enable_logging(true)
-            .build()?;
-
-        Browser::new(launch_options)?
-    };
-
     let handler = dptree::entry()
         .branch(
             Update::filter_message()
@@ -55,9 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .branch(Update::filter_message().filter(|message: Message| message.chat.is_private()).endpoint(handlers::private_message_handler));
 
-    let mut dispatcher = Dispatcher::builder(bot.clone(), handler)
-        .dependencies(dptree::deps![chrome])
-        .build();
+    let mut dispatcher = Dispatcher::builder(bot.clone(), handler).build();
 
     if config.webhook_url.is_some() {
         let update_listener = {
