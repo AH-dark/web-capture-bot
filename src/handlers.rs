@@ -40,7 +40,8 @@ pub async fn capture_command_handler(bot: Bot, message: Message) -> anyhow::Resu
         }
     };
 
-    let loading_msg = bot.send_message(message.chat.id, format!("Capturing a screenshot of {}...", url)).await?;
+    let loading_msg = bot.send_message(message.chat.id, format!("Capturing a screenshot of {}...", url))
+        .disable_web_page_preview(true).await?;
 
     // capture the screenshot
     let screenshot = match capture_website(url.as_str()).await {
@@ -71,7 +72,8 @@ pub async fn private_message_handler(bot: Bot, message: Message) -> anyhow::Resu
         }
     };
 
-    let loading_msg = bot.send_message(message.chat.id, format!("Capturing a screenshot of {}...", url)).await?;
+    let loading_msg = bot.send_message(message.chat.id, format!("Capturing a screenshot of {}...", url))
+        .disable_web_page_preview(true).await?;
 
     // capture the screenshot
     let screenshot = match capture_website(url.as_str()).await {
