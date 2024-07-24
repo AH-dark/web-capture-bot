@@ -53,7 +53,8 @@ pub async fn capture_command_handler(bot: Bot, message: Message) -> anyhow::Resu
     };
 
     // send the screenshot
-    bot.send_photo(message.chat.id, teloxide::types::InputFile::memory(screenshot).file_name("screenshot.png")).caption(url.to_string()).await?;
+    bot.send_photo(message.chat.id, teloxide::types::InputFile::memory(screenshot).file_name("screenshot.png"))
+        .reply_to_message_id(message.id).await?;
     bot.delete_message(message.chat.id, loading_msg.id).await.ok(); // ignore errors
 
     Ok(())
@@ -85,7 +86,8 @@ pub async fn private_message_handler(bot: Bot, message: Message) -> anyhow::Resu
     };
 
     // send the screenshot
-    bot.send_photo(message.chat.id, teloxide::types::InputFile::memory(screenshot).file_name("screenshot.png")).caption(url.to_string()).await?;
+    bot.send_photo(message.chat.id, teloxide::types::InputFile::memory(screenshot).file_name("screenshot.png"))
+        .reply_to_message_id(message.id).await?;
     bot.delete_message(message.chat.id, loading_msg.id).await.ok(); // ignore errors
 
     Ok(())

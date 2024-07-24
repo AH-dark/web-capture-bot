@@ -29,6 +29,11 @@ pub async fn capture_website(url: &str) -> anyhow::Result<Vec<u8>> {
         background: None,
     }).context("Failed to create a new tab")?;
     tab.set_default_timeout(std::time::Duration::from_secs(10));
+    tab.set_user_agent(
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36",
+        Some("en-US,en;q=0.9,hi;q=0.8,es;q=0.7,lt;q=0.6"),
+        Some("macOS"),
+    )?;
 
     tab.navigate_to(url)?;
     tab.wait_until_navigated()?;
@@ -41,6 +46,8 @@ pub async fn capture_website(url: &str) -> anyhow::Result<Vec<u8>> {
         None,
         true,
     )?;
+
+    tab.close(true).ok();
 
     Ok(screenshot)
 }
