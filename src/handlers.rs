@@ -38,7 +38,7 @@ pub async fn capture_command_handler(bot: Bot, message: Message, chrome: Browser
     let loading_msg = bot.send_message(message.chat.id, format!("Capturing a screenshot of {}...", url)).await?;
 
     // capture the screenshot
-    let screenshot = match capture_website(&chrome, url.as_str()) {
+    let screenshot = match capture_website(chrome, url.as_str()) {
         Ok(screenshot) => screenshot,
         Err(e) => {
             bot.send_message(message.chat.id, format!("Failed to capture a screenshot: {}", e)).await?;

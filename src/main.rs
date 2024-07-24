@@ -38,6 +38,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .path(Some(default_executable().map_err(|e| anyhow!(e))?))
             .sandbox(config.sandbox.unwrap_or(true))
             .headless(config.headless.unwrap_or(true))
+            .window_size(Some((1920, 1080)))
+            .enable_logging(true)
             .build()?;
 
         Browser::new(launch_options)?
@@ -54,12 +56,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .branch(Update::filter_message().filter(|message: Message| message.chat.is_private()).endpoint(handlers::private_message_handler));
 
     let mut dispatcher = Dispatcher::builder(bot.clone(), handler)
-        .distribution_function(|_| None::<std::convert::Infallible>)
         .dependencies(dptree::deps![chrome])
         .build();
 
     if config.webhook_url.is_some() {
-        let update_lisener = {
+        let update_listener = {
             let webhook_listen_addr = config.webhook_listen_addr.unwrap_or("0.0.0.0:8080".into()).parse()?;
             log::debug!("webhook_listen_addr: {}", webhook_listen_addr);
 
@@ -73,7 +74,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .await?
         };
 
-        dispatcher.dispatch_with_listener(update_lisener, LoggingErrorHandler::new()).await;
+        dispatcher.dispatch_with_listener(update_listener, LoggingErrorHandler::new()).await;
     } else {
         dispatcher.dispatch().await;
     }
